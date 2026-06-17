@@ -17,22 +17,17 @@ def load_config(file):
             target = json.load(f)
     return target
 
-
-# добавить про запуск через Modify run configuration --browser=chrome\ie\firefox
-
 @pytest.fixture
 def app(request):
     global fixture
     browser = request.config.getoption("--browser")
-    web_config = load_config(request.config.getoption("--target"))['web']
-
+    config = load_config(request.config.getoption("--target"))
+    web_config = config["web"]
+    webadmin_config = config["webadmin"]
     if fixture is None or not fixture.is_valid():
-        fixture = Application(browser=browser, base_url=web_config['base_url'])
+        fixture = Application(browser=browser, base_url=web_config["base_url"])
+    fixture.session.ensure_login(username=webadmin_config["username"],password=webadmin_config["password"])
     return fixture
-
-
-
-
 
 @pytest.fixture(scope="session", autouse=True)
 def stop(request):
